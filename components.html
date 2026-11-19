@@ -24,23 +24,23 @@ const cols=['Trigger','Input','Context','Processing','AI','Output'];
 const lanes=[
  ['Sales rep','(user of the desk)',[['b','t','Clicks "Find accounts", enters company name'],0,0,0,0,['p','done','Dashboard: funnel, scores, drafts, replies']]],
  ['Research agent','(web sources)',[0,['o','in','Reads news, job boards, Wikidata, company pages'],['y','ctx','Ideal-customer gates G1–G5 + seller profile'],0,0,0]],
- ['Qualifier','(rules engine)',[0,0,0,['o','q','Settles each gate with a quoted source; scores fit'],0,['g','sc','Score + pass/fail/unknown per gate']]],
+ ['Qualifier','(rules engine)',[0,0,0,['o','q','Settles each gate with a quoted source; scores fit'],0,0]],
  ['AI model','(Claude)',[0,0,0,0,['g','ai','Writes 1 cited hook + 2 pains; classifies replies'],0]],
- ['Services','(Hunter, Gmail, DB)',[0,0,['y','svc','Hunter finds + verifies decision-maker email'],0,0,['p','mail','Draft lands in own Gmail inbox; state saved to DB']]],
- ['Learning loop','(human in loop)',[0,0,0,['o','les','Rep approves lessons'],0,['y','mem','Approved lessons feed next drafts']]]
+ ['Services','(Hunter, Gmail, DB)',[0,0,0,['y','svc','Hunter finds + verifies decision-maker email'],0,['p','mail','Draft lands in own Gmail inbox; state saved to DB']]],
+ ['Learning loop','(human in loop)',[0,0,0,0,['y','mem','Approved lessons feed next drafts'],['o','les','Rep approves lessons']]]
 ];
 const g=document.getElementById('g');let h='<div class="h">Actor</div>'+cols.map(c=>`<div class="h">${c}</div>`).join('');
 lanes.forEach((l,i)=>{h+=`<div class="lane r${i}" style="background:#222b45">${l[0]}<small>${l[1]}</small></div>`;
  l[2].forEach(c=>{h+=`<div class="cell r${i}">${c?`<div class="box ${c[0]}" id="${c[1]}">${c[2]}</div>`:''}</div>`})});
 g.innerHTML=h;
-const flow=[['t','in'],['in','ctx'],['ctx','svc'],['svc','q'],['q','sc'],['sc','ai'],['ai','mail'],['mail','done'],['mail','les'],['les','mem']];
+const flow=[['t','in'],['in','ctx'],['ctx','q'],['q','svc'],['svc','ai'],['ai','mail'],['mail','done',-35],['mail','les',35],['les','mem'],['mem','ai']];
 function draw(){const s=document.getElementById('s'),w=document.getElementById('wrap'),W=g.scrollWidth,H=g.scrollHeight,R=w.getBoundingClientRect();
  s.setAttribute('width',W);s.setAttribute('height',H);
  let p='<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="#444"/></marker></defs>';
- flow.forEach(([a,b])=>{const A=document.getElementById(a).getBoundingClientRect(),B=document.getElementById(b).getBoundingClientRect(),G=g.getBoundingClientRect();
-  const x1=A.right-G.left,y1=A.top+A.height/2-G.top,x2=B.left-G.left,y2=B.top+B.height/2-G.top;
+ flow.forEach(([a,b,dx=0])=>{const A=document.getElementById(a).getBoundingClientRect(),B=document.getElementById(b).getBoundingClientRect(),G=g.getBoundingClientRect();
+  const back=B.left<A.left;const x1=(back?A.left:A.right)-G.left,y1=A.top+A.height/2-G.top,x2=(back?B.right:B.left)-G.left,y2=B.top+B.height/2-G.top;
   const vert=Math.abs(A.left-B.left)<20;
-  const d=vert?`M${A.left+A.width/2-G.left} ${A.bottom-G.top} L${B.left+B.width/2-G.left} ${B.top-G.top}`:`M${x1} ${y1} C${x1+30} ${y1} ${x2-30} ${y2} ${x2} ${y2}`;
+  const up=B.top<A.top;const d=vert?`M${A.left+A.width/2-G.left+dx} ${(up?A.top:A.bottom)-G.top} L${B.left+B.width/2-G.left+dx} ${(up?B.bottom:B.top)-G.top}`:`M${x1} ${y1} C${x1+(back?-30:30)} ${y1} ${x2+(back?30:-30)} ${y2} ${x2} ${y2}`;
   p+=`<path d="${d}" fill="none" stroke="#444" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#a)"/>`});
  s.innerHTML=p}
 addEventListener('load',draw);addEventListener('resize',draw);
