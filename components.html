@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Outreach Desk · Components Map</title>
+<style>
+body{margin:0;font:13px system-ui,sans-serif;background:#f6f7fb;color:#121829;padding:20px}
+h1{text-align:center;font-size:18px;margin:0 0 14px}a{color:#3b5bf0}
+#wrap{position:relative;max-width:1250px;margin:auto;overflow-x:auto}
+.grid{display:grid;grid-template-columns:130px repeat(6,1fr);min-width:1050px;position:relative;z-index:1}
+.h{background:#1b2236;color:#fff;text-align:center;padding:9px;font-weight:600}.h:first-child{text-align:left}
+.lane{background:#222b45;color:#fff;padding:10px;font-weight:600;display:flex;flex-direction:column;justify-content:center}.lane small{font-weight:400;opacity:.7}
+.cell{min-height:92px;padding:10px 8px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e4e7ef}
+.r0{background:#fdf1f1}.r1{background:#fdf6ea}.r2{background:#fffbe6}.r3{background:#effaf3}.r4{background:#eef4fd}.r5{background:#f4f0fb}
+.box{border:1.5px solid;border-radius:6px;padding:7px 8px;font-size:11.5px;text-align:center;background:#fff;max-width:150px}
+.b{border-color:#4a72d8;background:#eaf0fd}.o{border-color:#e08a55;background:#fdeee3}.y{border-color:#d3a529;background:#fdf4d6}.g{border-color:#3aa66e;background:#e3f6ea}.p{border-color:#d0527a;background:#fbe4ec}
+svg{position:absolute;inset:0;pointer-events:none;z-index:2}
+.key{max-width:1250px;margin:18px auto 0;line-height:1.7}
+</style></head><body>
+<h1>Outreach Desk · AI Sales Agent — Components Map</h1>
+<div id="wrap"><div class="grid" id="g"></div><svg id="s"></svg></div>
+<div class="key"><b>Legend:</b> dashed arrows = data/control flow between components. Rubric scoring uses no AI (rule-based); only the drafting and reply-classification steps call the model.
+ · <a href="/">← Back to app</a></div>
+<script>
+const cols=['Trigger','Input','Context','Processing','AI','Output'];
+const lanes=[
+ ['Sales rep','(user of the desk)',[['b','t','Clicks "Find accounts", enters company name'],0,0,0,0,['p','done','Dashboard: funnel, scores, drafts, replies']]],
+ ['Research agent','(web sources)',[0,['o','in','Reads news, job boards, Wikidata, company pages'],['y','ctx','Ideal-customer gates G1–G5 + seller profile'],0,0,0]],
+ ['Qualifier','(rules engine)',[0,0,0,['o','q','Settles each gate with a quoted source; scores fit'],0,['g','sc','Score + pass/fail/unknown per gate']]],
+ ['AI model','(Claude)',[0,0,0,0,['g','ai','Writes 1 cited hook + 2 pains; classifies replies'],0]],
+ ['Services','(Hunter, Gmail, DB)',[0,0,['y','svc','Hunter finds + verifies decision-maker email'],0,0,['p','mail','Draft lands in own Gmail inbox; state saved to DB']]],
+ ['Learning loop','(human in loop)',[0,0,0,['o','les','Rep approves lessons'],0,['y','mem','Approved lessons feed next drafts']]]
+];
+const g=document.getElementById('g');let h='<div class="h">Actor</div>'+cols.map(c=>`<div class="h">${c}</div>`).join('');
+lanes.forEach((l,i)=>{h+=`<div class="lane r${i}" style="background:#222b45">${l[0]}<small>${l[1]}</small></div>`;
+ l[2].forEach(c=>{h+=`<div class="cell r${i}">${c?`<div class="box ${c[0]}" id="${c[1]}">${c[2]}</div>`:''}</div>`})});
+g.innerHTML=h;
+const flow=[['t','in'],['in','ctx'],['ctx','svc'],['svc','q'],['q','sc'],['sc','ai'],['ai','mail'],['mail','done'],['mail','les'],['les','mem']];
+function draw(){const s=document.getElementById('s'),w=document.getElementById('wrap'),W=g.scrollWidth,H=g.scrollHeight,R=w.getBoundingClientRect();
+ s.setAttribute('width',W);s.setAttribute('height',H);
+ let p='<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8z" fill="#444"/></marker></defs>';
+ flow.forEach(([a,b])=>{const A=document.getElementById(a).getBoundingClientRect(),B=document.getElementById(b).getBoundingClientRect(),G=g.getBoundingClientRect();
+  const x1=A.right-G.left,y1=A.top+A.height/2-G.top,x2=B.left-G.left,y2=B.top+B.height/2-G.top;
+  const vert=Math.abs(A.left-B.left)<20;
+  const d=vert?`M${A.left+A.width/2-G.left} ${A.bottom-G.top} L${B.left+B.width/2-G.left} ${B.top-G.top}`:`M${x1} ${y1} C${x1+30} ${y1} ${x2-30} ${y2} ${x2} ${y2}`;
+  p+=`<path d="${d}" fill="none" stroke="#444" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#a)"/>`});
+ s.innerHTML=p}
+addEventListener('load',draw);addEventListener('resize',draw);
+</script></body></html>
